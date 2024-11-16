@@ -18,7 +18,6 @@ export default function Home() {
       .post("http://localhost:9000/SanPham/GetProductRank")
       .then((rs) => {
         setProductRank(rs.data);
-        console.log(rs.data);
       })
       .catch((err) => {
         console.log(err);
@@ -210,19 +209,48 @@ export default function Home() {
 
             <div className="flex flex-col gap-5 w-full p-5 ml-[50px] bg-[rgba(255,255,255,0.4)] text-[#00dbff]">
               <div>
-                <p className="text-[40px]">Tên sản phẩm: {productRank[scrollPage].productInfo.tenSanPham}</p>
+                <p className="text-[40px]">
+                  Tên sản phẩm: {productRank[scrollPage].productInfo.tenSanPham}
+                </p>
               </div>
               <div>
-                <p>Tên cửa hàng: {productRank[scrollPage].storeInfo.tenCuaHang}</p>
+                <p>
+                  Tên cửa hàng: {productRank[scrollPage].storeInfo.tenCuaHang}
+                </p>
               </div>
               <div>
-                <p>Đánh giá: {productRank[scrollPage].averageRating}/5 ({productRank[scrollPage].totalRatings} Lược đánh giá)</p>
+                <p>
+                  Đánh giá: {productRank[scrollPage].averageRating}/5 (
+                  {productRank[scrollPage].totalRatings} Lược đánh giá)
+                </p>
               </div>
               <div>
-                <p className="text-amber-500">{Intl.NumberFormat().format(productRank[scrollPage].productInfo.giaTien)} VND</p>
+                <p className="text-amber-500">
+                  {Intl.NumberFormat().format(
+                    productRank[scrollPage].productInfo.giaTien
+                  )}{" "}
+                  VND
+                </p>
               </div>
               <div>
-                <button className="bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(productRank[scrollPage].productInfo._id);
+                  }}
+                  disabled={
+                    window.localStorage.getItem("IDS") ===
+                    productRank[scrollPage].productInfo.maCuaHang
+                      ? true
+                      : false
+                  }
+                  className={
+                    window.localStorage.getItem("IDS") ===
+                    productRank[scrollPage].productInfo.maCuaHang
+                      ? "text-white p-2 bg-slate-300"
+                      : "bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]"
+                  }
+                >
                   Thêm vào giỏ hàng
                 </button>
               </div>
