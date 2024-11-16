@@ -1,27 +1,88 @@
-import React from 'react'
+import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
+import { UserContext } from "../Data/User";
+import { useNavigate } from "react-router-dom";
 
 export default function Notification() {
+  const defaultContext = useContext(UserContext)
+  const [isWait, setIsWait] = useState(true);
+  const [notification, setNotification] = useState([]);
+  const navigate = useNavigate();
+  const id = window.localStorage.getItem("ID");
+  useEffect(() => {
+    getNotificationClient();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const getNotificationClient = () => {
+    axios
+      .post("http://localhost:9000/ThongBao/GetNotification", { id: id })
+      .then((rs) => {
+        if (rs.data.Status === "Success") {
+          setNotification(rs.data.notification);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    if (notification && notification.length > 0) {
+      setIsWait(false);
+    } else {
+      setTimeout(() => {
+        setIsWait(false);
+      }, 2000);
+    }
+  }, [notification]);
+
+  defaultContext.socket.on("Notification", () => {
+      setNotification([])
+      getNotificationClient()
+  });
+
   return (
-    <div class="flex items-center justify-center">
-      <div class=" w-[1800px] h-[750px] mt-4 rounded-3xl bg-gray-100 bg-opacity-30 ">
-      <div class="grid-container grid grid-cols-1 gap-5 p-6 overflow-auto   h-[650px] ">
-          {Array(10).fill(0).map((_, index) => (
-            <div key={index} class="flex items-center justify-between bg-white rounded-2xl ">
-              <div class="flex items-center h-[80px]">
-                <div class=" ml-20">Cửa hàng *Tên cửa hàng* đã phản hồi đánh giá của bạn </div>
+    <div className="flex items-center justify-center w-full">
+      {notification && notification.length !== 0 ? (
+        <div className="flex flex-col w-[90%] h-[759px] bg-slate-300 my-10 rounded-2xl gap-3 p-5">
+          {notification.map((i) => (
+            <div className="flex items-center bg-white rounded-2xl overflow-hidden duration-200 hover:shadow-default">
+              <div className="flex-grow pl-5 w-[90%]">
+                <p className="overflow-hidden truncate w-[90%]">{i.noiDung}</p>
               </div>
-              <div class="flex items-center justify-center bg-[#7CD0FF] rounded-r-2xl h-full w-[120px]">
-              <button class='text-center '>Xem</button>
+              <div>
+                <button
+                  onClick={() => {
+                    window.localStorage.setItem("IDPP", i.maSanPham);
+                    navigate("/PageProduct");
+                  }}
+                  className="p-5 bg-[#458FFF] w-[100px] border-2 border-[#458FFF] rounded-r-2xl text-white duration-200 ease-linear hover:text-[#458FFF] hover:bg-white"
+                >
+                  Xem
+                </button>
               </div>
             </div>
           ))}
         </div>
-        <div class="text-center mt-14">
-        <a href="/PageShop" class="w-[350px] p-3 bg-[#7CD0FF] text-center rounded-3xl">
-          Đăng nhập nếu đã có tài khoản
-        </a>
-      </div>
+      ) : isWait ? (
+        <div className="flex flex-col justify-center items-center w-[90%] h-[759px] bg-slate-300 my-10 rounded-2xl">
+          <div>
+            <span className="loader"></span>
+          </div>
+          <div>
+            <p>Loading...</p>
+          </div>
         </div>
+      ) : (
+        <div className="flex flex-col justify-center items-center w-[90%] h-[759px] bg-slate-300 my-10 rounded-2xl">
+          <div>
+            <p className="font-extrabold text-white">
+              Bạn chưa có thông báo nào
+            </p>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

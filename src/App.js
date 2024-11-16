@@ -14,10 +14,10 @@ import ForgotPass from "./Components/ForgotPass";
 const App = () => {
   const location = useLocation();
   return (
-    <div>
-      <div className="relative z-0">
+    <div className="h-full w-full">
+      <div className="relative z-0 h-full w-full">
         <img
-          className="fixed bottom-0"
+          className="fixed bottom-0 object-cover"
           src="./Image/BackGround.jpeg"
           alt="BackGround"
         ></img>

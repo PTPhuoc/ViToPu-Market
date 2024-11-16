@@ -13,6 +13,10 @@ export default function Cart() {
 
   const Navigate = useNavigate();
 
+  useEffect(() => {
+    getCart();
+  }, []);
+
   const getCart = () => {
     const id = window.localStorage.getItem("ID");
     axios
@@ -48,10 +52,6 @@ export default function Cart() {
         console.log(err);
       });
   };
-
-  useEffect(() => {
-    getCart();
-  }, []);
 
   useEffect(() => {
     if (carts.length > 0) {
@@ -105,7 +105,7 @@ export default function Cart() {
         </div>
       ) : (
         <div class="flex items-center justify-center w-full bg-gradient-cloud">
-          <div className="flex flex-col w-[80%] p-10">
+          <div className="flex flex-col w-full p-10">
             <div className="flex items-center justify-between w-full bg-slate-300 p-3">
               <div className="flex gap-5">
                 <div className="px-4 py-2 bg-white">
@@ -127,20 +127,20 @@ export default function Cart() {
               </div>
             </div>
             <div className="flex items-center gap-5 bg-slate-100 p-3">
-              <div className="w-[400px] text-center">
+              <div className="w-[400px] text-center max-xl:hidden">
                 <p>Hình ảnh</p>
               </div>
               <div className="w-[200px] text-center">
                 <p>Sản phẩm</p>
               </div>
-              <div className="w-[200px] text-center">
+              <div className="w-[200px] text-center max-2xl:hidden">
                 <p>Cửa hàng</p>
-              </div>
-              <div className="w-[150px] text-center">
-                <p>Số lượng</p>
               </div>
               <div className="w-[200px] text-center">
                 <p>Giá tiền</p>
+              </div>
+              <div className="w-[150px] text-center">
+                <p>Số lượng</p>
               </div>
             </div>
             {isWait ? (
@@ -161,10 +161,10 @@ export default function Cart() {
                         window.localStorage.setItem("IDPP", e.maSanPham);
                         Navigate("/PageProduct");
                       }}
-                      className="w-full flex justify-between items-center bg-white duration-200 ease-linear shadow-none hover:shadow-default"
+                      className="w-full flex items-center bg-white duration-200 ease-linear shadow-none hover:shadow-default"
                     >
-                      <div className="flex items-center gap-5">
-                        <div className="w-[400px] h-[250px]">
+                      <div className="flex items-center gap-5 ">
+                        <div className="w-[400px] h-[250px] max-xl:hidden">
                           <img
                             className="w-[400px] h-[250px]"
                             src={
@@ -181,14 +181,9 @@ export default function Cart() {
                             {e.tenSanPham}
                           </p>
                         </div>
-                        <div>
+                        <div className="max-2xl:hidden">
                           <p className="w-[200px] overflow-hidden whitespace-nowrap text-ellipsis">
                             {e.tenCuaHang}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="w-[150px] overflow-hidden whitespace-nowrap text-ellipsis">
-                            {e.soLuong}
                           </p>
                         </div>
                         <div>
@@ -196,8 +191,13 @@ export default function Cart() {
                             {Intl.NumberFormat().format(e.giaTien) + " VND"}
                           </p>
                         </div>
+                        <div>
+                          <p className="w-[150px] overflow-hidden whitespace-nowrap text-ellipsis">
+                            {e.soLuong}
+                          </p>
+                        </div>
                       </div>
-                      <div className="p-3">
+                      <div className="p-3 flex-grow">
                         <button
                           onClick={(p) => {
                             p.stopPropagation();

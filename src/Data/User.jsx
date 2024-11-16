@@ -1,4 +1,5 @@
 import axios from "axios";
+import { io } from "socket.io-client";
 import React, { createContext, useState } from "react";
 
 export const UserContext = createContext();
@@ -7,6 +8,9 @@ export default function User({ Componnent }) {
   const [shop, setShop] = useState({});
   const [product, setProduct] = useState({});
   const [shopPreview, setShopPreview] = useState({});
+
+  const socket = io("http://localhost:9000");
+
   const inforUser = () => {
     const ID = window.localStorage.getItem("ID");
     axios
@@ -63,7 +67,7 @@ export default function User({ Componnent }) {
 
   return (
     <UserContext.Provider
-      value={{ User, inforUser, shop, checkShop, shopPreview, inforShop, product, inforProduct }}
+      value={{ User, inforUser, shop, checkShop, shopPreview, inforShop, product, inforProduct, socket }}
     >
       {Componnent}
     </UserContext.Provider>

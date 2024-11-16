@@ -20,38 +20,32 @@ export default function PageProduct() {
   const [isComment, setIsComment] = useState(false);
   const [comment, setComment] = useState({
     content: "",
-    rate: 0,
+    rate: 5,
   });
   const [userComment, setUserComment] = useState({});
   const [filterRate, setFilterRate] = useState(0);
+  const Navigate = useNavigate();
+
+  const ID = window.localStorage.getItem("ID");
 
   useEffect(() => {
+    setUserComment({});
+    setFilterRate(0);
     inforProduct();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (product._id) {
+    if (product._id && window.localStorage.getItem("IDPP") === product._id) {
       inforShop();
       window.localStorage.setItem("IDSP", product.maCuaHang);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product]);
-
-  useEffect(() => {
-    if (shopPreview._id) {
-      const ID = window.localStorage.getItem("ID");
       if (ID) {
         checkComment(ID);
         setIsWait(false);
-        getComment();
-      } else {
-        setIsWait(false);
-        getComment();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shopPreview]);
+  }, [product]);
 
   useEffect(() => {
     if (userComment.length > 0) {
@@ -59,9 +53,22 @@ export default function PageProduct() {
     } else {
       setTimeout(() => {
         setIsWaitComment(false);
-      }, [3000]);
+      }, [2000]);
     }
   }, [userComment]);
+
+  useEffect(() => {
+    if (filterRate > 0) {
+      setUserComment({});
+      setIsWaitComment(true);
+      filterComment();
+    } else {
+      if (product._id && window.localStorage.getItem("IDPP") === product._id) {
+        getComment();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterRate, product]);
 
   const getComment = () => {
     axios
@@ -71,6 +78,8 @@ export default function PageProduct() {
       .then((rs) => {
         if (rs.data.Status === "Success") {
           setUserComment(rs.data.userComment);
+        } else {
+          setUserComment({});
         }
       })
       .catch((err) => {
@@ -97,8 +106,6 @@ export default function PageProduct() {
       });
   };
 
-  const Navigate = useNavigate();
-
   const addToCart = (idp) => {
     const id = window.localStorage.getItem("ID");
     console.log(id);
@@ -123,10 +130,29 @@ export default function PageProduct() {
     }
   };
 
+  const filterComment = () => {
+    axios
+      .post("http://localhost:9000/DanhGia/FilterComment", {
+        maSanPham: product._id,
+        mucDoDanhGia: filterRate,
+      })
+      .then((rs) => {
+        if (rs.data.Status === "Success") {
+          setUserComment(rs.data.filterComment);
+          setIsWaitComment(false);
+        } else {
+          setUserComment({});
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const handleComment = (e) => {
     e.preventDefault();
+    const maCuaHang = window.localStorage.getItem("IDSP")
     const currnetDate = new Date();
-    const ID = window.localStorage.getItem("ID");
     axios
       .post("http://localhost:9000/DanhGia/Comment", {
         maKhachHang: ID,
@@ -134,6 +160,8 @@ export default function PageProduct() {
         ngayDanhGia: currnetDate,
         mucDoDanhGia: comment.rate,
         noiDung: comment.content,
+        maCuaHang: maCuaHang,
+        tenSanPham: product.tenSanPham
       })
       .then((rs) => {
         if (rs.data.Status === "Success") {
@@ -405,15 +433,7 @@ export default function PageProduct() {
                           <button
                             onClick={(e) => {
                               e.preventDefault();
-                              if (comment.rate === 0) {
-                                setComment({ ...comment, rate: 1 });
-                              } else {
-                                if (comment.rate !== 1) {
-                                  setComment({ ...comment, rate: 1 });
-                                } else {
-                                  setComment({ ...comment, rate: 0 });
-                                }
-                              }
+                              setComment({ ...comment, rate: 1 });
                             }}
                           >
                             <svg
@@ -601,17 +621,6 @@ const ElementComment = ({
   setIsWaitComment,
   setUserComment,
 }) => {
-  const {
-    user,
-    inforUser,
-    shop,
-    checkShop,
-    shopPreview,
-    inforShop,
-    product,
-    inforProduct,
-    inforShopWithMa,
-  } = useContext(UserContext);
   const [isOption, setIsOption] = useState(false);
   const [isFeedback, setIsFeedback] = useState(false);
   const [isOptionFeedback, setIsOptionFeedback] = useState(false);
@@ -751,6 +760,7 @@ const ElementComment = ({
                     className="bg-transparent fill-black duration-200 ease-linear hover:bg-slate-400 hover:fill-white"
                     onClick={() => {
                       setIsUpdateFeedback(false);
+                      setIsOptionFeedback(false)
                     }}
                   >
                     <svg
@@ -966,7 +976,10 @@ const ElementComment = ({
                       setIsOption(true);
                     }
                   }}
-                  className="w-[15px] h-[30px]"
+                  className={
+                    "w-[15px] h-[30px] " +
+                    (IDS === IDSP && c.phanHoi ? "hidden" : "")
+                  }
                 >
                   <svg
                     className="w-[15px] h-[30px]"
@@ -1094,7 +1107,7 @@ const ElementComment = ({
                     <div className="absolute top-0 left-8 -translate-y-2 w-[200px] bg-white flex flex-col">
                       <button
                         onClick={() => {
-                          setComment({rate: 0, content: c.phanHoi.noiDung})
+                          setComment({ rate: 0, content: c.phanHoi.noiDung });
                           setIsUpdateFeedback(true);
                         }}
                         className="h-full px-3 py-1 bg-white text-[#458FFF] duration-200 ease-linear hover:bg-[#458FFF] hover:text-white"

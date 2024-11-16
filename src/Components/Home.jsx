@@ -10,7 +10,20 @@ export default function Home() {
   const [scrollPage, setScrollPage] = useState(0);
   const [listProduct, setListProduct] = useState([]);
   const [valueSearch, setvalueSearch] = useState("");
+  const [productRank, setProductRank] = useState([]);
   const scrollProduct = useRef(null);
+
+  useEffect(() => {
+    axios
+      .post("http://localhost:9000/SanPham/GetProductRank")
+      .then((rs) => {
+        setProductRank(rs.data);
+        console.log(rs.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   const debounce = (func, delay) => {
     let timeout;
@@ -127,71 +140,118 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div
-        className={"flex justify-center items-center duration-300 ease-in"}
-        style={{
-          width: widthScreen * 3 + "px",
-          transform: "translateX(" + -1920 * scrollPage + "px)",
-        }}
-      >
-        <div
-          className="relative h-[700px] bg-white"
-          style={{ width: widthScreen + "px" }}
-        ></div>
-        <div
-          className="relative h-[700px] bg-red-400"
-          style={{ width: widthScreen + "px" }}
-        ></div>
-        <div
-          className="relative h-[700px] bg-slate-500"
-          style={{ width: widthScreen + "px" }}
-        ></div>
-      </div>
-      <div className="absolute flex justify-between items-center w-full h-[700px] translate-y-[500px]">
-        <div>
-          <button className="ml-[50px]" onClick={ChangeFirstScroll}>
-            <svg
-              className="w-[50px] fill-white stroke-[#858585] stroke-[5px]"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
+      {productRank && productRank.length > 0 ? (
+        <>
+          <div
+            className={"flex justify-center items-center duration-300 ease-in"}
+            style={{
+              width: widthScreen * 3 + "px",
+              transform: "translateX(" + -1920 * scrollPage + "px)",
+            }}
+          >
+            <div
+              className="relative h-[700px] bg-white"
+              style={{ width: widthScreen + "px" }}
             >
-              <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
-            </svg>
-          </button>
-        </div>
+              <img
+                className="w-full h-full object-cover "
+                src={
+                  "http://localhost:9000/Image/" +
+                  productRank[0].productInfo.hinhAnh +
+                  "." +
+                  productRank[0].productInfo.loaiAnh
+                }
+                alt=""
+              />
+            </div>
+            <div
+              className="relative h-[700px] bg-red-400"
+              style={{ width: widthScreen + "px" }}
+            >
+              <img
+                className="w-full h-full object-cover "
+                src={
+                  "http://localhost:9000/Image/" +
+                  productRank[1].productInfo.hinhAnh +
+                  "." +
+                  productRank[1].productInfo.loaiAnh
+                }
+                alt=""
+              />
+            </div>
+            <div
+              className="relative h-[700px] bg-slate-500"
+              style={{ width: widthScreen + "px" }}
+            >
+              <img
+                className="w-full h-full object-cover "
+                src={
+                  "http://localhost:9000/Image/" +
+                  productRank[2].productInfo.hinhAnh +
+                  "." +
+                  productRank[2].productInfo.loaiAnh
+                }
+                alt=""
+              />
+            </div>
+          </div>
+          <div className="absolute flex justify-between items-center w-full h-[700px] translate-y-[500px]">
+            <div>
+              <button className="ml-[50px]" onClick={ChangeFirstScroll}>
+                <svg
+                  className="w-[50px] fill-white stroke-[#858585] stroke-[5px]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 320 512"
+                >
+                  <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+                </svg>
+              </button>
+            </div>
 
-        <div className="flex flex-col gap-5 w-full p-5 ml-[50px] bg-[rgba(255,255,255,0.3)]">
+            <div className="flex flex-col gap-5 w-full p-5 ml-[50px] bg-[rgba(255,255,255,0.4)] text-[#00dbff]">
+              <div>
+                <p className="text-[40px]">Tên sản phẩm: {productRank[scrollPage].productInfo.tenSanPham}</p>
+              </div>
+              <div>
+                <p>Tên cửa hàng: {productRank[scrollPage].storeInfo.tenCuaHang}</p>
+              </div>
+              <div>
+                <p>Đánh giá: {productRank[scrollPage].averageRating}/5 ({productRank[scrollPage].totalRatings} Lược đánh giá)</p>
+              </div>
+              <div>
+                <p className="text-amber-500">{Intl.NumberFormat().format(productRank[scrollPage].productInfo.giaTien)} VND</p>
+              </div>
+              <div>
+                <button className="bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]">
+                  Thêm vào giỏ hàng
+                </button>
+              </div>
+            </div>
+            <div className="w-full"></div>
+            <div>
+              <button className="mr-[50px]" onClick={ChangeLastScroll}>
+                <svg
+                  className="w-[50px] rotate-180 fill-white stroke-[#858585] stroke-[5px]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 320 512"
+                >
+                  <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col justify-center items-center w-full h-[700px] bg-white">
           <div>
-            <p className="text-[40px]">Tên sản phẩm</p>
+            <span className="loader"></span>
           </div>
           <div>
-            <p>Tên cửa hàng</p>
-          </div>
-          <div>
-            <p>Lượt</p>
-          </div>
-          <div>
-            <p>100,000 vnd</p>
-          </div>
-          <div>
-            <button className="bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]">
-              Thêm vào giỏ hàng
-            </button>
+            <p>Loading...</p>
           </div>
         </div>
-        <div className="w-full"></div>
-        <div>
-          <button className="mr-[50px]" onClick={ChangeLastScroll}>
-            <svg
-              className="w-[50px] rotate-180 fill-white stroke-[#858585] stroke-[5px]"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 320 512"
-            >
-              <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      )}
+
       <div className="flex flex-col items-center bg-slate-200 h-[840px]">
         <div className="border-b-[5px] w-[300px] border-[rgba(83,165,185,1)] ">
           <p className="font-bold text-[40px] pt-5 text-center">SẢN PHẨM</p>
@@ -264,8 +324,16 @@ export default function Home() {
                           e.stopPropagation();
                           addToCart(p._id);
                         }}
-                        disabled={window.localStorage.getItem("IDS") === p.maCuaHang ? true : false}
-                        className={window.localStorage.getItem("IDS") === p.maCuaHang ? "text-white p-2 bg-slate-300" :"bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]"}
+                        disabled={
+                          window.localStorage.getItem("IDS") === p.maCuaHang
+                            ? true
+                            : false
+                        }
+                        className={
+                          window.localStorage.getItem("IDS") === p.maCuaHang
+                            ? "text-white p-2 bg-slate-300"
+                            : "bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]"
+                        }
                       >
                         Thêm
                       </button>
