@@ -207,15 +207,15 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-5 w-full p-5 ml-[50px] bg-[rgba(255,255,255,0.4)] text-[#00dbff]">
+            <div className="flex flex-col gap-5 w-full p-5 ml-[50px] bg-[rgba(0,0,0,0.4)] text-white">
               <div>
                 <p className="text-[40px]">
-                  Tên sản phẩm: {productRank[scrollPage].productInfo.tenSanPham}
+                  Tên sản phẩm: <span className="font-bold">{productRank[scrollPage].productInfo.tenSanPham}</span>
                 </p>
               </div>
               <div>
                 <p>
-                  Tên cửa hàng: {productRank[scrollPage].storeInfo.tenCuaHang}
+                  Tên cửa hàng: <span className="font-bold">{productRank[scrollPage].storeInfo.tenCuaHang}</span>
                 </p>
               </div>
               <div>
