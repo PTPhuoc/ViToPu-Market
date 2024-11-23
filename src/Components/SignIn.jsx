@@ -30,7 +30,7 @@ export default function SignIn() {
   };
 
   return (
-    <div class=" bg-cover bg-center  flex items-center justify-center mt-[150px]">
+    <div class=" bg-cover bg-center flex items-center justify-center mt-[150px]">
       <div>
         <div class="bg-black bg-opacity-30 p-6 rounded-3xl w-96 items-center">
           <h2 class="text-white font-bold text-center text-2xl mb-6">

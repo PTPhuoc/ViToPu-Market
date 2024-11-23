@@ -24,8 +24,8 @@ export default function Cart() {
       .then((rs) => {
         if (rs.data.Status === "Success") {
           setCarts(rs.data.detailCart);
-        }else{
-          setCarts({})
+        } else {
+          setCarts({});
         }
       })
       .catch((err) => {
@@ -53,27 +53,67 @@ export default function Cart() {
       });
   };
 
+  const upProduct = (p) => {
+    setCarts((preCart) =>
+      preCart.map((i) =>
+        i.maSanPham === p.maSanPham
+          ? {
+              ...i,
+              soLuong: i.soLuong + 1,
+              tongTien: (i.soLuong + 1) * i.giaTien,
+            }
+          : i
+      )
+    );
+  };
+
+  const downProduct = (p) => {
+    setCarts((preCart) =>
+      preCart
+        .map((i) =>
+          i.maSanPham === p.maSanPham
+            ? {
+                ...i,
+                soLuong: i.soLuong - 1,
+                tongTien: (i.soLuong - 1) * i.giaTien,
+              }
+            : i
+        )
+        .filter((i) => i.soLuong > 0)
+    );
+  };
+
   useEffect(() => {
     if (carts.length > 0) {
+      // Tính tổng số lượng và giá tiền của các sản phẩm trong giỏ hàng
       const detailTotal = carts.reduce(
         (acc, item) => {
-          acc.giaTien += item.giaTien * item.soLuong;
-          acc.soLuong += item.soLuong;
+          // Kiểm tra nếu soLuong lớn hơn 0
+          if (item.soLuong > 0) {
+            acc.giaTien += item.giaTien * item.soLuong;
+            acc.soLuong += item.soLuong;
+          }
           return acc;
         },
         { giaTien: 0, soLuong: 0 }
       );
+      
+      // Cập nhật total nếu có sản phẩm hợp lệ
       setTotal({
         money: detailTotal.giaTien,
         quantity: detailTotal.soLuong,
       });
       setIsWait(false);
     } else {
-      setTimeout(() => {
-        setIsWait(false);
-      }, [3000]);
+      // Nếu giỏ hàng rỗng, set total về 0
+      setTotal({
+        money: 0,
+        quantity: 0,
+      });
+      setIsWait(false);
     }
   }, [carts]);
+  
 
   const handleBuyCart = async () => {
     setIsWaitAll(true);
@@ -89,7 +129,7 @@ export default function Cart() {
     );
     await Promise.all(requests);
     setIsWaitAll(false);
-    getCart()
+    getCart();
   };
 
   return (
@@ -142,6 +182,9 @@ export default function Cart() {
               <div className="w-[150px] text-center">
                 <p>Số lượng</p>
               </div>
+              <div className="w-[200px] text-center">
+                <p>Tổng tiền</p>
+              </div>
             </div>
             {isWait ? (
               <div className="w-full h-[620px] flex flex-col justify-center items-center bg-[rgba(255,255,255,1)]">
@@ -191,9 +234,47 @@ export default function Cart() {
                             {Intl.NumberFormat().format(e.giaTien) + " VND"}
                           </p>
                         </div>
+                        <div className="flex items-center w-[150px]">
+                          <div>
+                            <p className="w-[50px] overflow-hidden whitespace-nowrap text-ellipsis">
+                              {e.soLuong}
+                            </p>
+                          </div>
+                          <div>
+                            <button
+                              onClick={(p) => {
+                                p.stopPropagation();
+                                upProduct(e);
+                              }}
+                              className="w-[40px] h-[40px]"
+                            >
+                              <svg
+                                className="w-[40px] h-[40px] fill-sky-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 320 512"
+                              >
+                                <path d="M318 177.5c3.8-8.8 2-19-4.6-26l-136-144C172.9 2.7 166.6 0 160 0s-12.9 2.7-17.4 7.5l-136 144c-6.6 7-8.4 17.2-4.6 26S14.4 192 24 192l72 0 0 288c0 17.7 14.3 32 32 32l64 0c17.7 0 32-14.3 32-32l0-288 72 0c9.6 0 18.2-5.7 22-14.5z" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div>
+                            <button onClick={(p) => {
+                                p.stopPropagation();
+                                downProduct(e);
+                              }} className="w-[40px] h-[40px]">
+                              <svg
+                                className="w-[40px] h-[40px] fill-sky-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 320 512"
+                              >
+                                <path d="M2 334.5c-3.8 8.8-2 19 4.6 26l136 144c4.5 4.8 10.8 7.5 17.4 7.5s12.9-2.7 17.4-7.5l136-144c6.6-7 8.4-17.2 4.6-26s-12.5-14.5-22-14.5l-72 0 0-288c0-17.7-14.3-32-32-32L128 0C110.3 0 96 14.3 96 32l0 288-72 0c-9.6 0-18.2 5.7-22 14.5z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                         <div>
-                          <p className="w-[150px] overflow-hidden whitespace-nowrap text-ellipsis">
-                            {e.soLuong}
+                          <p className="w-[200px] overflow-hidden whitespace-nowrap text-ellipsis">
+                            {Intl.NumberFormat().format(e.tongTien) + " VND"}
                           </p>
                         </div>
                       </div>
@@ -220,15 +301,21 @@ export default function Cart() {
               </div>
             ) : (
               <div className="w-full h-[620px] flex flex-col justify-center items-center bg-white">
-              <div>
-                <svg className="w-[100px] h-[100px] fill-slate-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-                  <path d="M24 0C10.7 0 0 10.7 0 24S10.7 48 24 48l45.5 0c3.8 0 7.1 2.7 7.9 6.5l51.6 271c6.5 34 36.2 58.5 70.7 58.5L488 384c13.3 0 24-10.7 24-24s-10.7-24-24-24l-288.3 0c-11.5 0-21.4-8.2-23.6-19.5L170.7 288l288.5 0c32.6 0 61.1-21.8 69.5-53.3l41-152.3C576.6 57 557.4 32 531.1 32L360 32l0 102.1 23-23c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-64 64c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l23 23L312 32 120.1 32C111 12.8 91.6 0 69.5 0L24 0zM176 512a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm336-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0z" />
-                </svg>
+                <div>
+                  <svg
+                    className="w-[100px] h-[100px] fill-slate-300"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 576 512"
+                  >
+                    <path d="M24 0C10.7 0 0 10.7 0 24S10.7 48 24 48l45.5 0c3.8 0 7.1 2.7 7.9 6.5l51.6 271c6.5 34 36.2 58.5 70.7 58.5L488 384c13.3 0 24-10.7 24-24s-10.7-24-24-24l-288.3 0c-11.5 0-21.4-8.2-23.6-19.5L170.7 288l288.5 0c32.6 0 61.1-21.8 69.5-53.3l41-152.3C576.6 57 557.4 32 531.1 32L360 32l0 102.1 23-23c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-64 64c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l23 23L312 32 120.1 32C111 12.8 91.6 0 69.5 0L24 0zM176 512a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm336-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-extrabold text-slate-300">
+                    Giỏ trống nè, hãy mua gì đó nào!
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-extrabold text-slate-300">Giỏ trống nè, hãy mua gì đó nào!</p>
-              </div>
-            </div>
             )}
           </div>
         </div>
