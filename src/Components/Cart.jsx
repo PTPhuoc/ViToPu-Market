@@ -97,7 +97,7 @@ export default function Cart() {
         },
         { giaTien: 0, soLuong: 0 }
       );
-      
+
       // Cập nhật total nếu có sản phẩm hợp lệ
       setTotal({
         money: detailTotal.giaTien,
@@ -113,7 +113,6 @@ export default function Cart() {
       setIsWait(false);
     }
   }, [carts]);
-  
 
   const handleBuyCart = async () => {
     setIsWaitAll(true);
@@ -158,9 +157,15 @@ export default function Cart() {
                 </div>
               </div>
               <div>
+                {}
                 <button
+                  disabled={carts.length > 0 ? false : true}
                   onClick={handleBuyCart}
-                  className="bg-[#458FFF] border-2 border-[#458FFF] text-white px-5 py-2 duration-200 ease-linear hover:bg-white hover:text-[#458FFF]"
+                  className={
+                    carts.length > 0
+                      ? "bg-[#458FFF] border-2 border-[#458FFF] text-white px-5 py-2 duration-200 ease-linear hover:bg-white hover:text-[#458FFF]"
+                      : "bg-zinc-400 text-white px-5 py-2 cursor-default"
+                  }
                 >
                   Mua
                 </button>
@@ -258,10 +263,13 @@ export default function Cart() {
                             </button>
                           </div>
                           <div>
-                            <button onClick={(p) => {
+                            <button
+                              onClick={(p) => {
                                 p.stopPropagation();
                                 downProduct(e);
-                              }} className="w-[40px] h-[40px]">
+                              }}
+                              className="w-[40px] h-[40px]"
+                            >
                               <svg
                                 className="w-[40px] h-[40px] fill-sky-500"
                                 xmlns="http://www.w3.org/2000/svg"

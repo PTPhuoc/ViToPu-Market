@@ -10,7 +10,9 @@ export default function Notification() {
   const navigate = useNavigate();
   const id = window.localStorage.getItem("ID");
   useEffect(() => {
-    getNotificationClient();
+    if(id){
+      getNotificationClient();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -78,7 +80,7 @@ export default function Notification() {
         <div className="flex flex-col justify-center items-center w-[90%] h-[759px] bg-slate-300 my-10 rounded-2xl">
           <div>
             <p className="font-extrabold text-white">
-              Bạn chưa có thông báo nào
+              {id?"Bạn chưa có thông báo nào": "Hãy đăng nhập để nhận thông báo"}
             </p>
           </div>
         </div>
