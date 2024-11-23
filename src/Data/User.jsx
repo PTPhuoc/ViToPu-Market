@@ -13,21 +13,28 @@ export default function User({ Componnent }) {
 
   const inforUser = () => {
     const ID = window.localStorage.getItem("ID");
-    axios
-      .post("http://localhost:9000/Client/GetInfor", { ID: ID })
-      .then((rs) => {
-        if (rs.data.Status !== "False") {
-          setUser(rs.data);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    if (ID) {
+      axios
+        .post("http://localhost:9000/Client/GetInfor", { ID: ID })
+        .then((rs) => {
+          if (rs.data.Status !== "False") {
+            setUser(rs.data);
+          } else {
+            setUser({});
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      setUser({});
+    }
   };
 
   const checkShop = () => {
     const ID = window.localStorage.getItem("ID");
-    axios
+    if(ID){
+      axios
       .post("http://localhost:9000/CuaHang/CheckShop", { ID: ID })
       .then((rs) => {
         if (rs.data.Status === "Success") {
@@ -38,6 +45,9 @@ export default function User({ Componnent }) {
       .catch((err) => {
         console.log(err);
       });
+    }else{
+      setShop({});
+    }
   };
 
   const inforShop = () => {
@@ -55,19 +65,32 @@ export default function User({ Componnent }) {
   };
 
   const inforProduct = () => {
-    const IDPP = window.localStorage.getItem("IDPP")
-    axios.post("http://localhost:9000/SanPham/InforProduct", { IDPP: IDPP}).then(rs => {
-      if(rs.data.Status === "Success"){
-        setProduct(rs.data.product)
-      }
-    }).catch(err => {
-      console.log(err)
-    })
-  }
+    const IDPP = window.localStorage.getItem("IDPP");
+    axios
+      .post("http://localhost:9000/SanPham/InforProduct", { IDPP: IDPP })
+      .then((rs) => {
+        if (rs.data.Status === "Success") {
+          setProduct(rs.data.product);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <UserContext.Provider
-      value={{ User, inforUser, shop, checkShop, shopPreview, inforShop, product, inforProduct, socket }}
+      value={{
+        User,
+        inforUser,
+        shop,
+        checkShop,
+        shopPreview,
+        inforShop,
+        product,
+        inforProduct,
+        socket,
+      }}
     >
       {Componnent}
     </UserContext.Provider>

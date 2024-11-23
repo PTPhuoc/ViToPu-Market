@@ -1,12 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import axios from "axios";
+import { UserContext } from "../Data/User";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const widthScreen = window.innerWidth;
+  const { User, inforUser, } = useContext(UserContext);
   const [scrollPage, setScrollPage] = useState(0);
   const [listProduct, setListProduct] = useState([]);
   const [valueSearch, setvalueSearch] = useState("");
@@ -14,6 +16,7 @@ export default function Home() {
   const scrollProduct = useRef(null);
 
   useEffect(() => {
+    inforUser()
     axios
       .post("http://localhost:9000/SanPham/GetProductRank")
       .then((rs) => {
