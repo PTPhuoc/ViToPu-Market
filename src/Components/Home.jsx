@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const widthScreen = window.innerWidth;
+  // eslint-disable-next-line no-unused-vars
   const { User, inforUser, } = useContext(UserContext);
   const [scrollPage, setScrollPage] = useState(0);
   const [listProduct, setListProduct] = useState([]);
