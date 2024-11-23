@@ -12,6 +12,7 @@ export default function PageShop() {
   const [listProduct, setListProduct] = useState([]);
   const [imagePreview, setImagePreview] = useState("");
   const [isSubmit, setIsSubmit] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
   const [deleteProduct, setDeleteProduct] = useState({
     id: "",
     name: "",
@@ -20,6 +21,7 @@ export default function PageShop() {
     window.localStorage.getItem("IDS") === window.localStorage.getItem("IDSP")
   );
   const [product, setProduct] = useState({
+    id: "",
     tenSanPham: "",
     moTa: "",
     giaTien: 0,
@@ -87,6 +89,30 @@ export default function PageShop() {
     inputFile.current.click();
   };
 
+  const handleSetInput = (p) => {
+    setProduct({
+      tenSanPham: p.tenSanPham,
+      giaTien: p.giaTien,
+      moTa: p.moTa,
+      maCuaHang: p.maCuaHang,
+      loaiAnh: p.loaiAnh,
+      id: p._id,
+    });
+    const imageUrl = `http://localhost:9000/Image/${p.hinhAnh}.${p.loaiAnh}`;
+    setImagePreview(imageUrl);
+    axios
+      .get(imageUrl, { responseType: "blob" })
+      .then((response) => {
+        const file = new File([response.data], `${p.hinhAnh}.${p.loaiAnh}`, {
+          type: response.data.type,
+        });
+        setSelectedImage(file);
+      })
+      .catch((error) => {
+        console.error("Error setting selected image:", error);
+      });
+  };
+
   const handleAddProduct = (e) => {
     e.preventDefault();
     const fd = new FormData();
@@ -103,7 +129,59 @@ export default function PageShop() {
         },
       })
       .then((rs) => {
+        setProduct({
+          tenSanPham: "",
+          moTa: "",
+          giaTien: 0,
+          maCuaHang: "",
+          loaiAnh: "",
+        });
+        setSelectedImage(null);
+        setImagePreview("");
+        if (inputFile.current) {
+          inputFile.current.value = null;
+        }
         window.localStorage.setItem("IDP", rs.data.IDP);
+        setListProduct([]);
+        takeListProduct();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const handleUpdateProduct = (e) => {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append("DataImage", selectedImage);
+    fd.append("tenSanPham", product.tenSanPham);
+    fd.append("id", product.id);
+    fd.append("moTa", product.moTa);
+    fd.append("giaTien", product.giaTien);
+    fd.append("loaiAnh", product.loaiAnh);
+    axios
+      .post("http://localhost:9000/SanPham/UpdateProduct", fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((rs) => {
+        setIsUpdate(false);
+        setProduct({
+          tenSanPham: "",
+          moTa: "",
+          giaTien: 0,
+          id: "",
+          loaiAnh: "",
+        });
+        setSelectedImage(null);
+        setImagePreview("");
+        if (inputFile.current) {
+          inputFile.current.value = null;
+        }
+        window.localStorage.setItem("IDP", rs.data.IDP);
+        setListProduct([]);
+        takeListProduct();
       })
       .catch((err) => {
         console.log(err);
@@ -117,7 +195,9 @@ export default function PageShop() {
       })
       .then((rs) => {
         if (rs.data.Status === "Success") {
+          setListProduct([]);
           takeListProduct();
+          setIsSubmit(false);
         } else {
           alert("Xóa tất bại");
         }
@@ -199,9 +279,13 @@ export default function PageShop() {
           {isOwner ? (
             <div className="w-full flex justify-center items-center bg-cyan-200">
               <div className="w-[80%]">
-                <form className="flex w-full">
+                <form
+                  className="flex w-full"
+                  onSubmit={isUpdate ? handleUpdateProduct : handleAddProduct}
+                >
                   <div className="h-[400px]">
                     <button
+                      type="button"
                       className="w-[500px] h-[400px]"
                       onClick={handleClickInput}
                     >
@@ -212,7 +296,6 @@ export default function PageShop() {
                       />
                     </button>
                     <input
-                      required
                       ref={inputFile}
                       onChange={handleImageChange}
                       type="file"
@@ -225,6 +308,7 @@ export default function PageShop() {
                         onChange={ChangeInput}
                         required
                         name="tenSanPham"
+                        value={product.tenSanPham}
                         placeholder="Tên sản phẩm"
                         className="px-4 py-3 w-[450px] rounded-xl"
                         type="text"
@@ -234,6 +318,7 @@ export default function PageShop() {
                       <input
                         onChange={ChangeInput}
                         required
+                        value={product.giaTien}
                         name="giaTien"
                         placeholder="Giá tiền"
                         className="px-4 py-3 w-[450px] rounded-xl"
@@ -245,19 +330,56 @@ export default function PageShop() {
                         onChange={ChangeInput}
                         required
                         placeholder="Mô tả"
+                        value={product.moTa}
                         className="resize-none px-4 py-3 w-[450px] h-[150px] outline-none rounded-xl"
                         name="moTa"
                       ></textarea>
                     </div>
-                    <div>
-                      <button
-                        onSubmit={handleAddProduct}
-                        type="submit"
-                        className="bg-[#458FFF] border-2 border-[#458FFF] text-[25px] text-white rounded-2xl px-3 py-1 duration-200 ease-linear hover:bg-white hover:text-[#458FFF]"
-                      >
-                        Thêm Sản Phẩm
-                      </button>
-                    </div>
+                    {isUpdate ? (
+                      <div className="flex gap-5 justify-center items-center">
+                        <div>
+                          <button
+                            type="submit"
+                            className="bg-[#458FFF] border-2 border-[#458FFF] text-[25px] text-white rounded-2xl px-3 py-1 duration-200 ease-linear hover:bg-white hover:text-[#458FFF]"
+                          >
+                            Xác nhận
+                          </button>
+                        </div>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsUpdate(false);
+                              setProduct({
+                                tenSanPham: "",
+                                moTa: "",
+                                giaTien: 0,
+                                id: "",
+                                loaiAnh: "",
+                              });
+                              setSelectedImage(null);
+                              setImagePreview("");
+                              if (inputFile.current) {
+                                inputFile.current.value = null;
+                              }
+                            }}
+                            className="bg-red-500 border-2 border-red-500 text-[25px] text-white rounded-2xl px-3 py-1 duration-200 ease-linear hover:bg-white hover:text-red-500"
+                          >
+                            Hủy
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <button
+                          type="submit"
+                          className="bg-[#458FFF] border-2 border-[#458FFF] text-[25px] text-white rounded-2xl px-3 py-1 duration-200 ease-linear hover:bg-white hover:text-[#458FFF]"
+                        >
+                          Thêm Sản Phẩm
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>
@@ -286,76 +408,106 @@ export default function PageShop() {
               </div>
             </div>
           ) : (
-            <div className="bg-[#69b0af] w-full grid grid-cols-4 gap-5 justify-center overflow-auto h-[760px] p-5">
-              {listProduct.map((p) => (
-                <div className="w-full">
-                  <button
-                    onClick={() => {
-                      window.localStorage.setItem("IDPP", p._id);
-                      Navigate("/PageProduct");
-                    }}
-                    className="relative flex flex-col shadow-none bg-transparent duration-200 ease-linear text-white border-2 border-white hover:bg-white hover:border-transparent hover:shadow-default hover:text-slate-600"
-                  >
-                    <div className="flex justify-center items-center w-full h-[300px]">
-                      <div>
-                        <img
-                          className="w-[450px] h-[300px] object-fill"
-                          src={
-                            "http://localhost:9000/Image/" +
-                            p.hinhAnh +
-                            "." +
-                            p.loaiAnh
-                          }
-                          alt={p.tenSanPham}
-                        ></img>
+            <div className="bg-[#69b0af] w-full h-[760px] p-5 relative">
+              {isUpdate ? (
+                <div className="absolute top-0 left-0 w-full h-full bg-[rgba(255,255,255,0.7)] z-20"></div>
+              ) : (
+                <></>
+              )}
+              <div className="grid grid-cols-4 gap-5 justify-center w-full h-full overflow-auto">
+                {listProduct.map((p) => (
+                  <div className="w-full">
+                    <button
+                      onClick={() => {
+                        window.localStorage.setItem("IDPP", p._id);
+                        Navigate("/PageProduct");
+                      }}
+                      className="relative flex flex-col shadow-none bg-transparent duration-200 ease-linear text-white border-2 border-white hover:bg-white hover:border-transparent hover:shadow-default hover:text-slate-600"
+                    >
+                      <div className="flex justify-center items-center w-full h-[300px]">
+                        <div>
+                          <img
+                            className="w-[450px] h-[300px] object-fill"
+                            src={
+                              "http://localhost:9000/Image/" +
+                              p.hinhAnh +
+                              "." +
+                              p.loaiAnh
+                            }
+                            alt={p.tenSanPham}
+                          ></img>
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-3">
-                      <p>{p.tenSanPham}</p>
-                    </div>
-                    <div className="flex items-center w-full justify-between p-3">
-                      <div>
-                        <p>{p.giaTien} VND</p>
+                      <div className="p-3">
+                        <p>{p.tenSanPham}</p>
+                      </div>
+                      <div className="flex items-center w-full justify-between p-3">
+                        <div>
+                          <p>{p.giaTien} VND</p>
+                        </div>
+                        {isOwner ? (
+                          <></>
+                        ) : (
+                          <div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(p._id);
+                              }}
+                              className="bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]"
+                            >
+                              Thêm
+                            </button>
+                          </div>
+                        )}
                       </div>
                       {isOwner ? (
-                        <></>
-                      ) : (
-                        <div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToCart(p._id);
-                            }}
-                            className="bg-[rgba(83,165,185,1)] text-white p-2 border-[rgba(83,165,185,1)] border-[2px] duration-200 ease-linear hover:bg-white hover:text-[rgba(83,165,185,1)]"
-                          >
-                            Thêm
-                          </button>
+                        <div className="absolute top-0 right-0 m-3 flex gap-5">
+                          <div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetInput(p);
+                                setIsUpdate(true);
+                              }}
+                            >
+                              <svg
+                                className="w-[40px] h-[40px] fill-sky-500 stroke-[20px] stroke-sky-500 duration-200 ease-linear hover:fill-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 512 512"
+                              >
+                                <path d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160L0 416c0 53 43 96 96 96l256 0c53 0 96-43 96-96l0-96c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7-14.3 32-32 32L96 448c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 64z" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteProduct({
+                                  id: p._id,
+                                  name: p.tenSanPham,
+                                });
+                                setIsSubmit(true);
+                              }}
+                            >
+                              <svg
+                                className="w-[40px] h-[40px] fill-red-500 stroke-[20px] stroke-red-500 duration-200 ease-linear hover:fill-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 448 512"
+                              >
+                                <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
+                      ) : (
+                        <></>
                       )}
-                    </div>
-                    {isOwner ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteProduct({ id: p._id, name: p.tenSanPham });
-                          setIsSubmit(true);
-                        }}
-                        className="absolute top-0 right-0 m-3"
-                      >
-                        <svg
-                          className="w-[40px] h-[40px] fill-red-500 stroke-[20px] stroke-red-500 duration-200 ease-linear hover:fill-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 448 512"
-                        >
-                          <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
-                        </svg>
-                      </button>
-                    ) : (
-                      <></>
-                    )}
-                  </button>
-                </div>
-              ))}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
