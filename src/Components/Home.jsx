@@ -65,6 +65,7 @@ export default function Home() {
 
   const addToCart = (idp) => {
     const id = window.localStorage.getItem("ID");
+    console.log(idp)
     if (id) {
       axios
         .post("http://localhost:9000/GioHang/AddToCart", {
@@ -224,7 +225,7 @@ export default function Home() {
               <div>
                 <p>
                   Đánh giá: {productRank[scrollPage].averageRating}/5 (
-                  {productRank[scrollPage].totalRatings} Lược đánh giá)
+                  {productRank[scrollPage].totalRatings} Lượt đánh giá)
                 </p>
               </div>
               <div>

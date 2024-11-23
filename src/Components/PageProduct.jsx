@@ -151,7 +151,7 @@ export default function PageProduct() {
 
   const handleComment = (e) => {
     e.preventDefault();
-    const maCuaHang = window.localStorage.getItem("IDSP")
+    const maCuaHang = window.localStorage.getItem("IDSP");
     const currnetDate = new Date();
     axios
       .post("http://localhost:9000/DanhGia/Comment", {
@@ -161,7 +161,7 @@ export default function PageProduct() {
         mucDoDanhGia: comment.rate,
         noiDung: comment.content,
         maCuaHang: maCuaHang,
-        tenSanPham: product.tenSanPham
+        tenSanPham: product.tenSanPham,
       })
       .then((rs) => {
         if (rs.data.Status === "Success") {
@@ -760,7 +760,7 @@ const ElementComment = ({
                     className="bg-transparent fill-black duration-200 ease-linear hover:bg-slate-400 hover:fill-white"
                     onClick={() => {
                       setIsUpdateFeedback(false);
-                      setIsOptionFeedback(false)
+                      setIsOptionFeedback(false);
                     }}
                   >
                     <svg
@@ -966,7 +966,7 @@ const ElementComment = ({
             </div>
           </div>
           <div className="px-3 h-[30px] relative">
-            {ID ? (
+            {ID === c._id || IDS === IDSP ? (
               <>
                 <button
                   onClick={() => {
@@ -1007,7 +1007,7 @@ const ElementComment = ({
                         </button>
                       </div>
                     )
-                  ) : (
+                  ) : ID === c._id ? (
                     <div className="absolute top-0 left-11 -translate-y-2 w-[200px] bg-white flex flex-col">
                       <button
                         onClick={() => {
@@ -1019,6 +1019,8 @@ const ElementComment = ({
                         Chỉnh sửa
                       </button>
                     </div>
+                  ) : (
+                    <></>
                   )
                 ) : (
                   <></>
